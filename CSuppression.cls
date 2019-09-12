@@ -101,16 +101,9 @@ Public Property Get Active() As Boolean
         On Error GoTo Whoa
     #End If
     '***********************************************************************************************
-    
-    With Application
-        ' save old states
-        If blnActive Then
-            Active = True
-        Else
-            Active = False
-        End If
-    End With
-    
+
+    Active = blnActive
+
     '***********************************************************************************************
 Letscontinue:
     ' clear out the status bar to give an indication of if the program freezes or not
