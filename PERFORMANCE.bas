@@ -1,3 +1,4 @@
+Attribute VB_Name = "PERFORMANCE"
 '***************************************************************************************
 Option Explicit
 #Const blnDeveloperMode = False
@@ -60,7 +61,4 @@ End Sub
 Sub TestContainer(Optional ByVal HideFromMacroList As Boolean = False)
 '    Dim Suppression As Object: Set Suppression = New CSuppression
 
-    Dim strTemp As String
-    
-    strTemp = GetVar("V_SAVE_AS").Value
 End Sub

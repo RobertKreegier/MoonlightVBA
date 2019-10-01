@@ -1,3 +1,4 @@
+Attribute VB_Name = "UTILS"
 '***************************************************************************************************
 Option Explicit
 #Const blnDeveloperMode = False
@@ -8,102 +9,6 @@ Private Const strModuleName As String = "UTILS"
 '****           modules. They should all be portable and easily usable in other applications.
 '***************************************************************************************************
 
-Function LocalWorkbookName(ByRef wb As Workbook) As String
-
-  Dim Ctr As Long
-  Dim objShell As Object
-  Dim UserProfilePath As String
-
-  'Check if it looks like a OneDrive location
-  If InStr(1, wb.FullName, "https://", vbTextCompare) > 0 Then
-
-    'Replace forward slashes with back slashes
-    LocalWorkbookName = Replace(wb.FullName, "/", "\")
-
-    'Get environment path using vbscript
-    Set objShell = CreateObject("WScript.Shell")
-    UserProfilePath = objShell.ExpandEnvironmentStrings("%UserProfile%")
-
-      'Trim OneDrive designators
-    For Ctr = 1 To 4
-       LocalWorkbookName = Mid(LocalWorkbookName, InStr(LocalWorkbookName, "\") + 1)
-    Next
-
-      'Construct the name
-    LocalWorkbookName = UserProfilePath & "\OneDrive\" & LocalWorkbookName
-
-  Else
-
-    LocalWorkbookName = wb.FullName
-
-  End If
-
-End Function
-
-Function ParseResource(Url As String)
-    Dim SplitURL() As String
-    Dim i As Integer
-    Dim WebDAVURI As String
-
-    'Check for a double forward slash in the resource path. This will indicate a URL
-    If Not InStr(1, Url, "//", vbBinaryCompare) = 0 Then
-    
-        'Split the URL into an array so it can be analyzed & reused
-        SplitURL = Split(Url, "/", , vbBinaryCompare)
-    
-        'URL has been found so prep the WebDAVURI string
-        WebDAVURI = "\\"
-    
-        'Check if the URL is secure
-        If SplitURL(0) = "https:" Then
-            'The code iterates through the array excluding unneeded components of the URL
-            For i = 0 To UBound(SplitURL)
-                If Not SplitURL(i) = "" Then
-                    Select Case i
-                        Case 0
-                            'Do nothing because we do not need the HTTPS element
-                        Case 1
-                            'Do nothing because this array slot is empty
-                        Case 2
-                        'This should be the root URL of the site. Add @ssl to the WebDAVURI
-                            WebDAVURI = WebDAVURI & SplitURL(i) & "@ssl"
-                        Case Else
-                            'Append URI components and build string
-                            WebDAVURI = WebDAVURI & "\" & SplitURL(i)
-                    End Select
-                End If
-            Next i
-    
-        Else
-        'URL is not secure
-            For i = 0 To UBound(SplitURL)
-    
-               'The code iterates through the array excluding unneeded components of the URL
-                If Not SplitURL(i) = "" Then
-                    Select Case i
-                        Case 0
-                            'Do nothing because we do not need the HTTPS element
-                        Case 1
-                            'Do nothing because this array slot is empty
-                            Case 2
-                        'This should be the root URL of the site. Does not require an additional slash
-                            WebDAVURI = WebDAVURI & SplitURL(i)
-                        Case Else
-                            'Append URI components and build string
-                            WebDAVURI = WebDAVURI & "\" & SplitURL(i)
-                    End Select
-                End If
-            Next i
-        End If
-     'Set the ParseResource value to WebDAVURI
-     ParseResource = WebDAVURI
-    Else
-    'There was no double forward slash so return system path as is
-        ParseResource = Url
-    End If
-
-End Function
-
 '***************************************************************************************************
 ' Author  : Chris Read, heavily modified by Robert Kreegier
 ' Purpose : Exports a selected range (table) to an xml format using table headers.
@@ -113,7 +18,7 @@ End Function
 '***************************************************************************************************
 Sub ExportRangeToXML(Optional ByRef rngSelection As Range, Optional ByVal strFileName As String = vbNullString)
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -150,7 +55,7 @@ Sub ExportRangeToXML(Optional ByRef rngSelection As Range, Optional ByVal strFil
         strFileName = Application.GetSaveAsFilename(, "(*.xml),*.xml", , "Save As...")
     End If
     
-    If strFileName = "False" Then GoTo Letscontinue
+    If strFileName = "False" Then GoTo ExitProc
     
     If strFileName <> vbNullString Then
         'Get table data
@@ -189,12 +94,12 @@ Sub ExportRangeToXML(Optional ByRef rngSelection As Range, Optional ByVal strFil
     End If
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
     Exit Sub
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": ExportRangeToXML", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Sub
 
@@ -1441,7 +1346,7 @@ End Function
 '***************************************************************************************************
 Function IsNothing(ByRef objInput As Object) As Boolean
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -1452,18 +1357,18 @@ Function IsNothing(ByRef objInput As Object) As Boolean
     If Not objInput Is Nothing Then IsNothing = False
     
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #Else
         On Error GoTo 0
     #End If
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": IsNothing", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -1473,7 +1378,7 @@ End Function
 '***************************************************************************************************
 Function IsSomething(ByRef objInput As Object) As Boolean
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -1484,18 +1389,18 @@ Function IsSomething(ByRef objInput As Object) As Boolean
     If Not objInput Is Nothing Then IsSomething = True
     
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #Else
         On Error GoTo 0
     #End If
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Isothing", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -1562,7 +1467,7 @@ End Function
 '***************************************************************************************************
 Function OpenWB(Optional ByVal strFilePathAndName As String, Optional ByRef blnWasAlreadyOpen As Boolean = False) As Workbook
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -1602,12 +1507,12 @@ Function OpenWB(Optional ByVal strFilePathAndName As String, Optional ByRef blnW
     End If
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
     Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": OpenWB", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -1630,7 +1535,7 @@ End Function
 '***************************************************************************************************
 Function IsWorkBookOpen(ByVal strFileName As String) As Boolean
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -1643,7 +1548,7 @@ Function IsWorkBookOpen(ByVal strFileName As String) As Boolean
     Close ff
     ErrNo = Err
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #Else
         On Error GoTo 0
     #End If
@@ -1655,12 +1560,12 @@ Function IsWorkBookOpen(ByVal strFileName As String) As Boolean
     End Select
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
     Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": IsWorkbookOpen", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 '***************************************************************************************************
@@ -1669,7 +1574,7 @@ End Function
 '***************************************************************************************************
 Function AnySheetsProtected(Optional ByRef wb As Workbook) As Boolean
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -1685,12 +1590,12 @@ Function AnySheetsProtected(Optional ByRef wb As Workbook) As Boolean
     Next ws
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
     Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": AnySheetsProtected", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -1700,7 +1605,7 @@ End Function
 '***************************************************************************************************
 Function AllSheetsProtected(Optional ByRef wb As Workbook) As Boolean
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -1719,12 +1624,12 @@ Function AllSheetsProtected(Optional ByRef wb As Workbook) As Boolean
     Next ws
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": AllSheetsProtected", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -1772,19 +1677,19 @@ End Function
 '***************************************************************************************************
 Function Addy(ByVal lngRow As Long, ByVal lngCol As Long) As String
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
     Addy = Cells(lngRow, lngCol).Address
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Addy", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -1795,7 +1700,7 @@ End Function
 '***************************************************************************************************
 Function CLet(ByVal lngCol As Long) As String
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -1819,12 +1724,12 @@ Function CLet(ByVal lngCol As Long) As String
     End If
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": CLet", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -1835,7 +1740,7 @@ End Function
 '***************************************************************************************************
 Function CNum(ByVal strCol As String) As Long
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -1849,12 +1754,12 @@ Function CNum(ByVal strCol As String) As Long
     CNum = lngResult
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": CNum", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -1873,7 +1778,7 @@ End Function
 '***************************************************************************************************
 Function GetCodeName(ByVal strName As String, ByRef wb As Workbook)
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -1902,12 +1807,12 @@ Function GetCodeName(ByVal strName As String, ByRef wb As Workbook)
     GetCodeName = vbNullString
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": GetCodeName", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -2042,7 +1947,7 @@ End Function
 '***************************************************************************************************
 Function ExportActiveSheetAsPDF(Optional ByVal OpenAfterPublish As Boolean = True) As String
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -2067,12 +1972,12 @@ Function ExportActiveSheetAsPDF(Optional ByVal OpenAfterPublish As Boolean = Tru
     ExportActiveSheetAsPDF = saveasfilename
         
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": ExportActiveSheetAsPDF", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -2180,7 +2085,7 @@ End Sub
 '***************************************************************************************************
 Function ExportActiveWSasDeadWB(Optional ByVal strSaveAsPath As String = vbNullString) As Workbook
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -2237,7 +2142,7 @@ Function ExportActiveWSasDeadWB(Optional ByVal strSaveAsPath As String = vbNullS
             nmName.Delete
         Next
         #If Not blnDeveloperMode Then
-            On Error GoTo Whoa
+            On Error GoTo ProcException
         #Else
             On Error GoTo 0
         #End If
@@ -2256,12 +2161,12 @@ Function ExportActiveWSasDeadWB(Optional ByVal strSaveAsPath As String = vbNullS
     End If
         
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": ExportActiveWSasDeadWB", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -2272,7 +2177,7 @@ End Function
 '***************************************************************************************************
 Function SwapInEscapeChars(ByVal strOriginalText As String) As String
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '************************************************************
     
@@ -2285,12 +2190,12 @@ Function SwapInEscapeChars(ByVal strOriginalText As String) As String
     SwapInEscapeChars = strOriginalText
 
     '************************************************************
-Letscontinue:
+ExitProc:
     Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": SwapInEscapeChars", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -2301,7 +2206,7 @@ End Function
 '***************************************************************************************************
 Function SwapOutEscapeChars(ByVal strOriginalText As String) As String
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '************************************************************
     
@@ -2312,12 +2217,12 @@ Function SwapOutEscapeChars(ByVal strOriginalText As String) As String
     SwapOutEscapeChars = strOriginalText
 
     '************************************************************
-Letscontinue:
+ExitProc:
     Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": SwapOutEscapeChars", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -2334,7 +2239,7 @@ End Function
 '***************************************************************************************************
 Sub CopyBkGrnd(ByRef FromInterior As Interior, ByRef ToInterior As Interior)
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -2366,11 +2271,11 @@ Sub CopyBkGrnd(ByRef FromInterior As Interior, ByRef ToInterior As Interior)
     End If
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
     Exit Sub
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": CopyBkGrnd", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Sub

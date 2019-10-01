@@ -1,3 +1,12 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "CSuppression"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
 '***************************************************************************************
 Option Explicit
 #Const blnDeveloperMode = False
@@ -47,7 +56,7 @@ End Sub
 
 Private Sub Activate()
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
 
@@ -63,18 +72,18 @@ Private Sub Activate()
 
     blnActive = True
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
     Exit Sub
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Activate", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Sub
 
 Public Property Let Active(ByVal blnValue As Boolean)
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -85,34 +94,34 @@ Public Property Let Active(ByVal blnValue As Boolean)
     End If
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
     ' clear out the status bar to give an indication of if the program freezes or not
     Application.StatusBar = False
     Exit Property
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Let Active", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Property
 
 Public Property Get Active() As Boolean
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
 
     Active = blnActive
 
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
     ' clear out the status bar to give an indication of if the program freezes or not
     Application.StatusBar = False
     Exit Property
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Let Active", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Property
 
@@ -137,7 +146,7 @@ End Sub
 
 Private Sub Deactivate()
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -152,14 +161,14 @@ Private Sub Deactivate()
     
     blnActive = False
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
     ' clear out the status bar to give an indication of if the program freezes or not
     Application.StatusBar = False
     Exit Sub
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Deactivate", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Sub
 

@@ -1,3 +1,4 @@
+Attribute VB_Name = "ROWANIMATION"
 '***************************************************************************************
 Option Explicit
 #Const blnDeveloperMode = False
@@ -22,7 +23,7 @@ Private Const strModuleName As String = "ROWANIMATION"
 '***************************************************************************************************
 Sub SetRowHeight(ByRef rngRows As Range, ByVal dblHeight As Double, ByVal lngTime As Long, Optional ByVal strEasing As String = "easeInOutSine")
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '***********************************************************************************************
     
@@ -42,7 +43,6 @@ Sub SetRowHeight(ByRef rngRows As Range, ByVal dblHeight As Double, ByVal lngTim
         Application.ScreenUpdating = True
         Application.Calculation = xlCalculationManual
         Application.EnableEvents = False
-        'Application.DisplayStatusBar = False
         
         ' In Excel 2010, we could do an animation without using DoEvents. Later versions require the screen to be updated each iteration of the animation, so they require DoEvents...however, it makes the animation slow
         If Application.Version > 14 Then
@@ -69,7 +69,6 @@ Sub SetRowHeight(ByRef rngRows As Range, ByVal dblHeight As Double, ByVal lngTim
         Application.ScreenUpdating = blnUpdating
         Application.Calculation = lngCalc
         Application.EnableEvents = blnEvent
-        'Application.DisplayStatusBar = True
     Else
         If dblHeight >= 0 Then
             rngRows.RowHeight = dblHeight
@@ -77,12 +76,12 @@ Sub SetRowHeight(ByRef rngRows As Range, ByVal dblHeight As Double, ByVal lngTim
     End If
     
     '***********************************************************************************************
-Letscontinue:
+ExitProc:
     Exit Sub
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": SetRowHeight", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Sub
 

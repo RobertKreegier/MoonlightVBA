@@ -1,3 +1,12 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "CQueryCache"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
 '***************************************************************************************
 Option Explicit
 #Const blnDeveloperMode = False
@@ -42,7 +51,7 @@ Private Cache() As String
 ' Returns the depth of the cache
 Public Property Get Depth() As Long
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
     
@@ -50,18 +59,18 @@ Public Property Get Depth() As Long
     
     '********************************************************************************
     #If Not blnDeveloperMode Then
-Letscontinue:
+ExitProc:
         Exit Property
-Whoa:
+ProcException:
         MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Get Depth"
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Property
 
 ' Sets the depth of the cache
 Public Property Let Depth(ByVal Value As Long)
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
     
@@ -72,11 +81,11 @@ Public Property Let Depth(ByVal Value As Long)
     
     '********************************************************************************
     #If Not blnDeveloperMode Then
-Letscontinue:
+ExitProc:
         Exit Property
-Whoa:
+ProcException:
         MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Let Depth"
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Property
 
@@ -84,7 +93,7 @@ End Property
 ' returned. Otherwise, the value associated with the name is returned.
 Public Function GetRecord(ByVal strName As String) As String
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
     
@@ -106,18 +115,18 @@ Public Function GetRecord(ByVal strName As String) As String
     
     '********************************************************************************
     #If Not blnDeveloperMode Then
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
         MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": GetRecord"
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
 ' Adds a new record to the next available spot in the cache closes to the top
 Public Sub AddRecord(ByVal strName As String, ByVal strValue As String)
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
     
@@ -137,18 +146,18 @@ Public Sub AddRecord(ByVal strName As String, ByVal strValue As String)
 
     '********************************************************************************
     #If Not blnDeveloperMode Then
-Letscontinue:
+ExitProc:
         Exit Sub
-Whoa:
+ProcException:
         MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Add"
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Sub
 
 ' Moves a record in the cache closer to position zero by one
 Private Sub PromoteRecord(ByVal lngIndex As Long)
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
     
@@ -175,18 +184,18 @@ Private Sub PromoteRecord(ByVal lngIndex As Long)
     
     '********************************************************************************
     #If Not blnDeveloperMode Then
-Letscontinue:
+ExitProc:
         Exit Sub
-Whoa:
+ProcException:
         MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": PromoteRecord"
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Sub
 
 ' Flushes the cache by redimming it without preserve
 Public Sub Flush()
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
     
@@ -196,18 +205,18 @@ Public Sub Flush()
     
     '********************************************************************************
     #If Not blnDeveloperMode Then
-Letscontinue:
+ExitProc:
         Exit Sub
-Whoa:
+ProcException:
         MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Flush"
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Sub
 
 ' Dumps the cache to a file for debugging
 Public Sub DumpCacheToFile(ByVal strFileName)
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
     
@@ -237,11 +246,11 @@ Public Sub DumpCacheToFile(ByVal strFileName)
     
     '********************************************************************************
     #If Not blnDeveloperMode Then
-Letscontinue:
+ExitProc:
         Exit Sub
-Whoa:
+ProcException:
         MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": DumpCacheToFile"
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Sub
 

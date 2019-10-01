@@ -23,9 +23,13 @@ Private Const strModuleName As String = "CONC_FILES"
 
 Private Const intConcTimeout = 720
 
+'***************************************************************************************************
+' Author  : Robert Kreegier
+' Purpose : This takes a filename and replaces the extension to ".conc"
+'***************************************************************************************************
 Function ToConcFileName(ByVal strFileName As String) As String
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
     
@@ -36,12 +40,12 @@ Function ToConcFileName(ByVal strFileName As String) As String
     ToConcFileName = Left(strFileName, InStrRev(strFileName, ".") - 1) & ".conc"
     
     '********************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": ToConcFileName", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -59,7 +63,7 @@ End Function
 '***************************************************************************************************
 Function ConcExists(Optional ByVal strFileName As String = vbNullString) As Boolean
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
     
@@ -101,12 +105,12 @@ Function ConcExists(Optional ByVal strFileName As String = vbNullString) As Bool
     End If
     
     '********************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": ConcExists", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -119,7 +123,7 @@ End Function
 '***************************************************************************************************
 Function CreateConc(Optional ByVal strFileName As String = vbNullString) As Boolean
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
 
@@ -201,12 +205,12 @@ Function CreateConc(Optional ByVal strFileName As String = vbNullString) As Bool
     End If
     
     '********************************************************************************
-Letscontinue:
+ExitProc:
         Exit Function
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": CreateConc", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Function
 
@@ -216,7 +220,7 @@ End Function
 '***************************************************************************************************
 Sub DeleteConcFile(Optional ByVal strFileName As String = vbNullString)
     #If Not blnDeveloperMode Then
-        On Error GoTo Whoa
+        On Error GoTo ProcException
     #End If
     '********************************************************************************
     
@@ -260,11 +264,11 @@ Sub DeleteConcFile(Optional ByVal strFileName As String = vbNullString)
     End If
     
     '********************************************************************************
-Letscontinue:
+ExitProc:
         Exit Sub
-Whoa:
+ProcException:
     #If Not blnDeveloperMode Then
         InfoBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": DeleteConcFile", True
-        Resume Letscontinue
+        Resume ExitProc
     #End If
 End Sub
