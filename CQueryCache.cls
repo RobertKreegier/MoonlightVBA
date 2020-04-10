@@ -36,7 +36,7 @@ Private Const strModuleName As String = "CQueryCache"
 '****
 '****               cCache.AddRecord "Company Name", "D25"
 '****
-'****           Later in the procedure, use it to look up a recrod:
+'****           Later in the procedure, use it to look up a record:
 '****
 '****               Dim strInfo As String
 '****               strInfo = Sheets(1).Range(cCache.GetRecord("Company Name")).Value
@@ -68,13 +68,13 @@ ProcException:
 End Property
 
 ' Sets the depth of the cache
-Public Property Let Depth(ByVal Value As Long)
+Public Property Let Depth(ByVal value As Long)
     #If Not blnDeveloperMode Then
         On Error GoTo ProcException
     #End If
     '********************************************************************************
     
-    CacheDepth = Value
+    CacheDepth = value
     
     ' you can only ReDim Preserve the last dimension of an array, so if we want this Cache to be dynamic, then we'll have to rework this
     ReDim Cache(CacheDepth, 1) As String
@@ -97,10 +97,10 @@ Public Function GetRecord(ByVal strName As String) As String
     #End If
     '********************************************************************************
     
-    ' return vbNullString by default
+    ' Return vbNullString by default.
     GetRecord = vbNullString
     
-    ' look down through the Cache for our record
+    ' Look down through the Cache for our record.
     Dim lngIndex As Long
     For lngIndex = 0 To CacheDepth
         If Cache(lngIndex, 0) = strName Then
@@ -258,10 +258,5 @@ End Sub
 Private Sub Class_Initialize()
     If CacheDepth = 0 Then CacheDepth = DefaultCacheDepth
     
-    On Error Resume Next
-    
-    Dim lngUpper As Long: lngUpper = UBound(Cache)
-    If Err.number <> 0 Then
-        ReDim Cache(CacheDepth, 1) As String
-    End If
+    ReDim Cache(CacheDepth, 1) As String
 End Sub
