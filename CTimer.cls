@@ -9,10 +9,10 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '***************************************************************************************
 Option Explicit
-#Const blnDeveloperMode = False
+Private Const blnDeveloperMode As Boolean = False
 Private Const strModuleName As String = "CTimer"
 '**** Author  : Robert M Kreegier
-'**** Purpose : A simple class tp encapsulate QueryPerformanceCounter
+'**** Purpose : A simple class to encapsulate QueryPerformanceCounter
 '**** Use     : To use, just initialize a CTimer object at the top of a procedure.
 '****               Dim cClock As Object: Set cClock = New CTimer
 '****           It will automatically record the dblBegin time. Use Begin to set another
@@ -45,27 +45,15 @@ Public dblEnd As Double
 Public lngLaps As Long
 Public dblAverage As Double
 
-Private Sub Class_Initialize()
-    Begin
-End Sub
-
-Private Function LI2Double(LI As LARGE_INTEGER) As Double
-    Dim Low As Double
-    Low = LI.lowpart
-    If Low < 0 Then
-        Low = Low + TWO_32
-    End If
-    LI2Double = LI.highpart * TWO_32 + Low
-End Function
-
-Public Function GetTick() As Double
-    Dim dblTime As LARGE_INTEGER
-    getTime dblTime
-    GetTick = 1000# * LI2Double(dblTime) / dlbFreq
-End Function
-
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : "Starts" the timer, recording the current time.
+'*******************************************************************************
 Public Sub Begin()
-    ' get and convert the frequency
+    On Error GoTo ProcException
+    '*******************************************************************************
+    
+    ' Get and convert the frequency
     Dim PerfFrequency As LARGE_INTEGER
     getFrequency PerfFrequency
     dlbFreq = LI2Double(PerfFrequency)
@@ -73,36 +61,168 @@ Public Sub Begin()
     ' Start the timer
     dblBegin = GetTick
 
-    ' init the ends
+    ' Init the end
     dblEnd = dblBegin
 
     lngLaps = 0
     dblAverage = 0
-End Sub
-
-Public Sub Sleep(ByVal dblMilliseconds As Double)
-    Dim dblStartSleep As Double: dblStartSleep = GetTick
     
-    If dblMilliseconds > 0 Then
-        While (GetTick - dblStartSleep) < dblMilliseconds
-        Wend
-    End If
+    '*******************************************************************************
+ExitProc:
+    Exit Sub
+ProcException:
+    TimerThrowError strModuleName, "Begin"
+    Resume ExitProc
 End Sub
 
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Returns the current tick.
+'*******************************************************************************
+Public Function GetTick() As Double
+    On Error GoTo ProcException
+    '*******************************************************************************
+    
+    Dim dblTime As LARGE_INTEGER
+    getTime dblTime
+    GetTick = 1000# * LI2Double(dblTime) / dlbFreq
+    
+    '*******************************************************************************
+ExitProc:
+    Exit Function
+ProcException:
+    TimerThrowError strModuleName, "GetTick"
+    Resume ExitProc
+End Function
+
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Increments the lap counter and records the current tick.
+'*******************************************************************************
 Public Sub Lap()
+    On Error GoTo ProcException
+    '*******************************************************************************
+    
     lngLaps = lngLaps + 1
     
     dblEnd = GetTick
     
     dblAverage = (dblEnd - dblBegin) / lngLaps
+    
+    '*******************************************************************************
+ExitProc:
+    Exit Sub
+ProcException:
+    TimerThrowError strModuleName, "Lap"
+    Resume ExitProc
 End Sub
 
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Class_Initialize
+'*******************************************************************************
+Private Sub Class_Initialize()
+    On Error GoTo ProcException
+    '*******************************************************************************
+    
+    Begin
+    
+    '*******************************************************************************
+ExitProc:
+    Exit Sub
+ProcException:
+    TimerThrowError strModuleName, "Class_Initialize"
+    Resume ExitProc
+End Sub
+
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Converts what QueryPerformanceCounter returns into milliseconds.
+'*******************************************************************************
+Private Function LI2Double(LI As LARGE_INTEGER) As Double
+    On Error GoTo ProcException
+    '*******************************************************************************
+    
+    Dim Low As Double
+    Low = LI.lowpart
+    If Low < 0 Then
+        Low = Low + TWO_32
+    End If
+    LI2Double = LI.highpart * TWO_32 + Low
+    
+    '*******************************************************************************
+ExitProc:
+    Exit Function
+ProcException:
+    TimerThrowError strModuleName, "LI2Double"
+    Resume ExitProc
+End Function
+
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Writes out a report to the Immediate Window.
+'*******************************************************************************
 Public Sub Report()
+    On Error GoTo ProcException
+    '*******************************************************************************
+    
     If lngLaps < 1 Then Lap
 
     Debug.Print "Begin: " & dblBegin
     Debug.Print "End: " & dblEnd
     Debug.Print "Laps: " & lngLaps
-    Debug.Print "Total Time: " & dblEnd - dblBegin & "ms"
-    Debug.Print "Average Lap: " & dblAverage & "ms"
+    
+    Dim dblTotalms As Double: dblTotalms = dblEnd - dblBegin
+    
+    If dblTotalms > 1000 Then
+        Debug.Print "Total Time: " & Round(dblTotalms / 1000, 3) & "sec" & " (" & Round(dblTotalms, 0) & "ms)"
+    ElseIf dblTotalms < 1 Then
+        Debug.Print "Total Time: " & Round(dblTotalms * 1000, 0) & "us" & " (" & Round(dblTotalms, 3) & "ms)"
+    Else
+        Debug.Print "Total Time: " & Round(dblTotalms, 3) & "ms"
+    End If
+    
+    If dblAverage > 1000 Then
+        Debug.Print "Average Lap: " & Round(dblAverage / 1000, 3) & "sec" & " (" & Round(dblAverage, 0) & "ms)"
+    ElseIf dblAverage < 1 Then
+        Debug.Print "Average Lap: " & Round(dblAverage * 1000, 0) & "us" & " (" & Round(dblAverage, 3) & "ms)"
+    Else
+        Debug.Print "Average Lap: " & Round(dblAverage, 3) & "ms"
+    End If
+    
+    '*******************************************************************************
+ExitProc:
+    Exit Sub
+ProcException:
+    TimerThrowError strModuleName, "Report"
+    Resume ExitProc
+End Sub
+
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Our error handling procedure.
+'*******************************************************************************
+Private Sub TimerThrowError(ByVal strModule As String, ByVal strProcedure As String)
+    If Not blnDeveloperMode Then
+        If strModule <> vbNullString Then
+            strModule = strModule & ": "
+        End If
+        
+        If strProcedure <> vbNullString Then
+            strModule = strModule & strProcedure & ", "
+            
+            If Erl > 0 Then
+                strModule = strModule & "Line: " & Erl
+            End If
+        End If
+        
+        If strModule <> vbNullString Then
+            strModule = strModule & Chr(10) & Chr(10)
+        End If
+        
+        Dim strErrorMessage As String
+        MsgBox strModule & Err.Description
+    Else
+        Err.Raise vbObjectError + 1000, "ERROR", strErrorMessage
+    End If
 End Sub

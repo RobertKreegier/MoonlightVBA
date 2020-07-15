@@ -9,15 +9,26 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '***************************************************************************************
 Option Explicit
-#Const blnDeveloperMode = False
+Private Const blnDeveloperMode As Boolean = False
 Private Const strModuleName As String = "CProgIndicator"
 '**** Author  : Robert M Kreegier
 '**** Purpose : Show progress
 '**** Use     : To use, just initialize a CProgIndicator object at the top of a procedure:
 '****
-'****               Dim objProg As Object: Set objProg = New CProgIndicator: objProg.Init 7
+'****               Dim objProg As Object
+'****               Set objProg = New CProgIndicator
 '****
-'****               objProg.Update "Initializing...", "Initializing styles..."
+'****               ' Initialize the progress indicator to expect 3 updates, and start it off with a caption and status
+'****               objProg.Init 3,"Initializing...", "Initializing things..."
+'****
+'****               ' The first update with a caption and status
+'****               objProg.Update "Progress...", "Doing thing 1..."
+'****
+'****               ' The second update with a caption and status
+'****               objProg.Update "Progress...", "Doing thing 2..."
+'****
+'****               ' The third update, which closes the progress
+'****               objProg.Update "Progress...", "Done!"
 '***************************************************************************************
 
 Private dblProgTick As Double
@@ -25,10 +36,38 @@ Private dblProgTotal As Double
 Private strProgCaption As String
 Private strProgStatus As String
 
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Return everything to the way it was before this class was
+'           initialized.
+'*******************************************************************************
+Private Sub Deactivate()
+    On Error GoTo ProcException
+    '*******************************************************************************
+    
+    dblProgTick = dblProgTotal
+    ProgIndicatorForm.Hide
+    ProgIndicatorForm.Text.Caption = strProgCaption & ": 0%"
+    ProgIndicatorForm.Bar.Width = 0
+    ProgIndicatorForm.Caption = vbNullString
+    ProgIndicatorForm.Status = vbNullString
+    
+    '*******************************************************************************
+ExitProc:
+    Exit Sub
+ProcException:
+    ProgThrowError strModuleName, "Deactivate"
+    Resume ExitProc
+End Sub
+
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Initialize the progress indicator by telling it how many updates
+'           there will be, what the initial dialog caption will be, and what
+'           the initial status string will be.
+'*******************************************************************************
 Public Sub Init(ByVal dblTotal As Double, Optional ByVal strCaption As String = "", Optional ByVal strStatus As String = "")
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
+    On Error GoTo ProcException
     '*******************************************************************************
     
     dblProgTick = 0
@@ -51,16 +90,47 @@ Public Sub Init(ByVal dblTotal As Double, Optional ByVal strCaption As String = 
 ExitProc:
     Exit Sub
 ProcException:
-    #If Not blnDeveloperMode Then
-        ThrowError Err.Description & Chr(10) & "thrown from " & strModuleName & ": Init, Line: " & Erl
-        Resume ExitProc
-    #End If
+    ProgThrowError strModuleName, "Init"
+    Resume ExitProc
 End Sub
 
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Our error handling procedure.
+'*******************************************************************************
+Private Sub ProgThrowError(ByVal strModule As String, ByVal strProcedure As String)
+    If Not blnDeveloperMode Then
+        If strModule <> vbNullString Then
+            strModule = strModule & ": "
+        End If
+        
+        If strProcedure <> vbNullString Then
+            strModule = strModule & strProcedure & ", "
+            
+            If Erl > 0 Then
+                strModule = strModule & "Line: " & Erl
+            End If
+        End If
+        
+        If strModule <> vbNullString Then
+            strModule = strModule & Chr(10) & Chr(10)
+        End If
+        
+        Dim strErrorMessage As String
+        MsgBox strModule & Err.Description
+    Else
+        Err.Raise vbObjectError + 1000, "ERROR", strErrorMessage
+    End If
+End Sub
+
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Update the progress indicator with new info. This also increments
+'           dblProgTick so we keep track of how many updates there's been to the
+'           progess.
+'*******************************************************************************
 Public Sub Update(Optional ByVal strCaption As String = "", Optional ByVal strStatus As String = "")
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
+    On Error GoTo ProcException
     '*******************************************************************************
 
     ' If a caption was given, then we'll update it, otherwise there's no need to
@@ -113,36 +183,10 @@ Public Sub Update(Optional ByVal strCaption As String = "", Optional ByVal strSt
 ExitProc:
     Exit Sub
 ProcException:
-    #If Not blnDeveloperMode Then
-        ThrowError Err.Description & Chr(10) & "thrown from " & strModuleName & ": Update, Line: " & Erl
-        Resume ExitProc
-    #End If
+    ProgThrowError strModuleName, "Update"
+    Resume ExitProc
 End Sub
 
-Private Sub Deactivate()
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
-    '*******************************************************************************
-    
-    dblProgTick = dblProgTotal
-    ProgIndicatorForm.Hide
-    ProgIndicatorForm.Text.Caption = strProgCaption & ": 0%"
-    ProgIndicatorForm.Bar.Width = 0
-    ProgIndicatorForm.Caption = vbNullString
-    ProgIndicatorForm.Status = vbNullString
-    
-    '*******************************************************************************
-ExitProc:
-    Exit Sub
-ProcException:
-    #If Not blnDeveloperMode Then
-        ThrowError Err.Description & Chr(10) & "thrown from " & strModuleName & ": Deactivate, Line: " & Erl
-        Resume ExitProc
-    #End If
-End Sub
-
-' Return everything to the way it was before this class was initialized
 Private Sub Class_Terminate()
     Deactivate
 End Sub

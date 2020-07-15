@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '***************************************************************************************
 Option Explicit
-#Const blnDeveloperMode = False
+Private Const blnDeveloperMode As Boolean = False
 Private Const strModuleName As String = "CLinkedCache"
 '**** Author  : Robert Kreegier
 '**** Purpose : A class for managing a linked list cache of records comprised of a name
@@ -34,13 +34,11 @@ Private Const strModuleName As String = "CLinkedCache"
 '
 '               If this class is not included in your project, you must create it.
 '
-'**** Use     : At the top of your module, create an instance of the cache object:
+'**** Use     : Create an instance of the cache object:
 '****
-'****               Public cCache As CLinkedCache
+'****               Dim cCache As CLinkedCache
 '****
-'****           This ensures that the cache will persist globally.
-'****
-'****           In the procedure it'll be used in, make sure it's initialized:
+'****           Make sure it's initialized:
 '****
 '****               If cCache Is Nothing Then Set cCache = New CLinkedCache
 '****
@@ -54,7 +52,7 @@ Private Const strModuleName As String = "CLinkedCache"
 '****               strInfo = Sheets(1).Range(cCache.GetRecord("Company Name")).Value
 '***************************************************************************************
 
-#Const blnUseHashing = False
+#Const blnUseHashing = False    ' This is an experimental feature to use hashes for keys to avoid matching large strings and potentially decrease lookup times.
 Private ndHead As SNode
 
 '*******************************************************************************
@@ -62,9 +60,7 @@ Private ndHead As SNode
 ' Purpose : Add a new node to the list at the head.
 '*******************************************************************************
 Public Sub AddRecord(ByVal strName As String, ByVal strValue As String)
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
+    On Error GoTo ProcException
     '********************************************************************************
     
     Dim ndNewNode As SNode: Set ndNewNode = New SNode
@@ -87,10 +83,37 @@ Public Sub AddRecord(ByVal strName As String, ByVal strValue As String)
 ExitProc:
     Exit Sub
 ProcException:
-    #If Not blnDeveloperMode Then
-        MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": AddRecord, Line: " & Erl
-    #End If
+    CacheThrowError strModuleName, "AddRecord"
     Resume ExitProc
+End Sub
+
+'*******************************************************************************
+' Author  : Robert Kreegier
+' Purpose : Our error handling procedure.
+'*******************************************************************************
+Private Sub CacheThrowError(ByVal strModule As String, ByVal strProcedure As String)
+    If Not blnDeveloperMode Then
+        If strModule <> vbNullString Then
+            strModule = strModule & ": "
+        End If
+        
+        If strProcedure <> vbNullString Then
+            strModule = strModule & strProcedure & ", "
+            
+            If Erl > 0 Then
+                strModule = strModule & "Line: " & Erl
+            End If
+        End If
+        
+        If strModule <> vbNullString Then
+            strModule = strModule & Chr(10) & Chr(10)
+        End If
+        
+        Dim strErrorMessage As String
+        MsgBox strModule & Err.Description
+    Else
+        Err.Raise vbObjectError + 1000, "ERROR", strErrorMessage
+    End If
 End Sub
 
 '*******************************************************************************
@@ -98,9 +121,7 @@ End Sub
 ' Purpose : Returns a total count of all the nodes in the cache.
 '*******************************************************************************
 Public Function Count() As Long
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
+    On Error GoTo ProcException
     '********************************************************************************
     
     Dim ndNode As SNode
@@ -116,9 +137,7 @@ Public Function Count() As Long
 ExitProc:
     Exit Function
 ProcException:
-    #If Not blnDeveloperMode Then
-        MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Count, Line: " & Erl
-    #End If
+    CacheThrowError strModuleName, "Count"
     Resume ExitProc
 End Function
 
@@ -128,9 +147,7 @@ End Function
 '           Window for debugging purposes.
 '*******************************************************************************
 Public Sub DebugRecords()
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
+    On Error GoTo ProcException
     '********************************************************************************
     
     Dim ndNode As SNode: Set ndNode = ndHead
@@ -146,9 +163,7 @@ Public Sub DebugRecords()
 ExitProc:
     Exit Sub
 ProcException:
-    #If Not blnDeveloperMode Then
-        MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": DebugRecords, Line: " & Erl
-    #End If
+    CacheThrowError strModuleName, "DebugRecords"
     Resume ExitProc
 End Sub
 
@@ -157,9 +172,7 @@ End Sub
 ' Purpose : Flushes the cache back to zero nodes.
 '*******************************************************************************
 Public Sub Flush()
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
+    On Error GoTo ProcException
     '********************************************************************************
     
     Set ndHead = Nothing
@@ -168,9 +181,7 @@ Public Sub Flush()
 ExitProc:
     Exit Sub
 ProcException:
-    #If Not blnDeveloperMode Then
-        MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Flush, Line: " & Erl
-    #End If
+    CacheThrowError strModuleName, "Flush"
     Resume ExitProc
 End Sub
 
@@ -179,9 +190,7 @@ End Sub
 ' Purpose : Gets a record from the node list.
 '*******************************************************************************
 Public Function GetRecord(ByVal strNameQuery As String) As String
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
+    On Error GoTo ProcException
     '********************************************************************************
     
     ' Return vbNullString by default
@@ -230,9 +239,7 @@ Public Function GetRecord(ByVal strNameQuery As String) As String
 ExitProc:
     Exit Function
 ProcException:
-    #If Not blnDeveloperMode Then
-        MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": GetRecord, Line: " & Erl
-    #End If
+    CacheThrowError strModuleName, "GetRecord"
     Resume ExitProc
 End Function
 
@@ -242,9 +249,7 @@ End Function
 '           by reducing the comparison time.
 '*******************************************************************************
 Private Function Hash4(ByVal txt As String) As String
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
+    On Error GoTo ProcException
     '********************************************************************************
     
     Dim mask, j, nC, crc As Integer
@@ -274,9 +279,7 @@ Private Function Hash4(ByVal txt As String) As String
 ExitProc:
     Exit Function
 ProcException:
-    #If Not blnDeveloperMode Then
-        MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": Hash4, Line: " & Erl
-    #End If
+    CacheThrowError strModuleName, "Hash4"
     Resume ExitProc
 End Function
 
@@ -285,9 +288,7 @@ End Function
 ' Purpose : Returns true/false if the specified record exists.
 '*******************************************************************************
 Public Function RecordExists(ByVal strNameQuery As String) As Boolean
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
+    On Error GoTo ProcException
     '********************************************************************************
     
     Dim ndNode As SNode: Set ndNode = ndHead
@@ -316,9 +317,7 @@ Public Function RecordExists(ByVal strNameQuery As String) As Boolean
 ExitProc:
     Exit Function
 ProcException:
-    #If Not blnDeveloperMode Then
-        MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": RecordExists, Line: " & Erl
-    #End If
+    CacheThrowError strModuleName, "RecordExists"
     Resume ExitProc
 End Function
 
@@ -327,9 +326,7 @@ End Function
 ' Purpose : Remove a node from the list.
 '*******************************************************************************
 Public Sub RemoveRecord(ByVal strName As String)
-    #If Not blnDeveloperMode Then
-        On Error GoTo ProcException
-    #End If
+    On Error GoTo ProcException
     '********************************************************************************
     
     Dim ndNode As SNode: Set ndNode = ndHead
@@ -359,8 +356,6 @@ Public Sub RemoveRecord(ByVal strName As String)
 ExitProc:
     Exit Sub
 ProcException:
-    #If Not blnDeveloperMode Then
-        MsgBox Err.Description & Chr(10) & "thrown from " & strModuleName & ": RemoveRecord, Line: " & Erl
-    #End If
+    CacheThrowError strModuleName, "RemoveRecord"
     Resume ExitProc
 End Sub
