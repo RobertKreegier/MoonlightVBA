@@ -83,7 +83,7 @@ Public Sub AddRecord(ByVal strName As String, ByVal strValue As String)
 ExitProc:
     Exit Sub
 ProcException:
-    CacheThrowError strModuleName, "AddRecord"
+    CacheThrowError "AddRecord"
     Resume ExitProc
 End Sub
 
@@ -91,26 +91,27 @@ End Sub
 ' Author  : Robert Kreegier
 ' Purpose : Our error handling procedure.
 '*******************************************************************************
-Private Sub CacheThrowError(ByVal strModule As String, ByVal strProcedure As String)
+Private Sub CacheThrowError(ByVal strProcedure As String)
     If Not blnDeveloperMode Then
-        If strModule <> vbNullString Then
-            strModule = strModule & ": "
+        Dim strErrorString As String
+        If strModuleName <> vbNullString Then
+            strErrorString = strModuleName & ": "
         End If
         
         If strProcedure <> vbNullString Then
-            strModule = strModule & strProcedure & ", "
+            strErrorString = strErrorString & strProcedure & ", "
             
             If Erl > 0 Then
-                strModule = strModule & "Line: " & Erl
+                strErrorString = strErrorString & "Line: " & Erl
             End If
         End If
         
-        If strModule <> vbNullString Then
-            strModule = strModule & Chr(10) & Chr(10)
+        If strErrorString <> vbNullString Then
+            strErrorString = strErrorString & Chr(10) & Chr(10)
         End If
         
         Dim strErrorMessage As String
-        MsgBox strModule & Err.Description
+        MsgBox strErrorString & Err.Description
     Else
         Err.Raise vbObjectError + 1000, "ERROR", strErrorMessage
     End If
@@ -137,7 +138,7 @@ Public Function Count() As Long
 ExitProc:
     Exit Function
 ProcException:
-    CacheThrowError strModuleName, "Count"
+    CacheThrowError "Count"
     Resume ExitProc
 End Function
 
@@ -163,7 +164,7 @@ Public Sub DebugRecords()
 ExitProc:
     Exit Sub
 ProcException:
-    CacheThrowError strModuleName, "DebugRecords"
+    CacheThrowError "DebugRecords"
     Resume ExitProc
 End Sub
 
@@ -181,7 +182,7 @@ Public Sub Flush()
 ExitProc:
     Exit Sub
 ProcException:
-    CacheThrowError strModuleName, "Flush"
+    CacheThrowError "Flush"
     Resume ExitProc
 End Sub
 
@@ -239,7 +240,7 @@ Public Function GetRecord(ByVal strNameQuery As String) As String
 ExitProc:
     Exit Function
 ProcException:
-    CacheThrowError strModuleName, "GetRecord"
+    CacheThrowError "GetRecord"
     Resume ExitProc
 End Function
 
@@ -279,7 +280,7 @@ Private Function Hash4(ByVal txt As String) As String
 ExitProc:
     Exit Function
 ProcException:
-    CacheThrowError strModuleName, "Hash4"
+    CacheThrowError "Hash4"
     Resume ExitProc
 End Function
 
@@ -317,7 +318,7 @@ Public Function RecordExists(ByVal strNameQuery As String) As Boolean
 ExitProc:
     Exit Function
 ProcException:
-    CacheThrowError strModuleName, "RecordExists"
+    CacheThrowError "RecordExists"
     Resume ExitProc
 End Function
 
@@ -356,6 +357,32 @@ Public Sub RemoveRecord(ByVal strName As String)
 ExitProc:
     Exit Sub
 ProcException:
-    CacheThrowError strModuleName, "RemoveRecord"
+    CacheThrowError "RemoveRecord"
+    Resume ExitProc
+End Sub
+
+Public Sub ReverseList()
+    On Error GoTo ProcException
+    '********************************************************************************
+    
+    Dim ndNode As SNode: Set ndNode = ndHead.ndNextNode
+    Dim ndPrev As SNode: Set ndPrev = ndHead
+    Dim ndNext As SNode
+    
+    While Not ndNode Is Nothing
+        Set ndNext = ndNode.ndNextNode
+        Set ndNode.ndNextNode = ndPrev
+        Set ndPrev = ndNode
+        Set ndNode = ndNext
+    Wend
+    
+    Set ndHead.ndNextNode = Nothing
+    Set ndHead = ndPrev
+    
+    '********************************************************************************
+ExitProc:
+    Exit Sub
+ProcException:
+    CacheThrowError "ReverseList"
     Resume ExitProc
 End Sub
